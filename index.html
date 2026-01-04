@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>STILL</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main>
+      <header>
+        <h1>STILL</h1>
+        <p class="subtitle">Pause. Notice. Be here.</p>
+      </header>
+
+      <section class="camera">
+        <video id="video" autoplay playsinline></video>
+        <canvas id="canvas" class="hidden"></canvas>
+        <div class="controls">
+          <button id="captureBtn">Hold still</button>
+        </div>
+        <p id="permissionHint" class="hint hidden">If camera access is blocked, allow it and refresh.</p>
+      </section>
+
+      <section class="reflection">
+        <div id="output" aria-live="polite"></div>
+        <div class="actions">
+          <button id="againBtn" class="secondary hidden">Look again</button>
+          <button id="saveBtn" class="secondary hidden">Save this moment</button>
+        </div>
+      </section>
+
+      <section class="gallery">
+        <h2 class="gallery-title">Saved moments</h2>
+        <div class="controls">
+          <button id="clearBtn" class="secondary">Clear saved moments</button>
+        </div>
+        <div id="gallery" class="grid"></div>
+      </section>
+    </main>
+
+    <footer>
+      <small>Made to help you pause.</small>
+    </footer>
+
+    <script type="module" src="src/app.js"></script>
+  </body>
+</html>

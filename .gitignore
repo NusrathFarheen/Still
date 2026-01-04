@@ -1,0 +1,14 @@
+# Editor and OS
+.vscode/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Node / tooling (none used now, safe defaults)
+node_modules/
+dist/
+build/
+
+# Env / logs
+.env
+*.log

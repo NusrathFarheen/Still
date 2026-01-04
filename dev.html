@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>STILL Dev Test</title>
+    <link rel="stylesheet" href="styles.css" />
+    <style>
+      main { max-width: 760px; }
+      pre { white-space: pre-line; background: #fff; border: 1px solid #eee; border-radius: 12px; padding: 12px; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <h1>STILL — Dev Test</h1>
+        <p class="subtitle">Sample reflections from synthetic features</p>
+      </header>
+      <div id="samples"></div>
+    </main>
+    <script type="module">
+      import { generateReflection } from './src/reflection.js';
+      const cases = [
+        { brightness: 0.8, warmness: 0.7, edges: 0.4, grain: 0.1, seed: 0.123 },
+        { brightness: 0.3, warmness: 0.3, edges: 0.7, grain: 0.2, seed: 0.456 },
+        { brightness: 0.5, warmness: 0.5, edges: 0.5, grain: 0.3, seed: 0.789 },
+      ];
+      const root = document.getElementById('samples');
+      cases.forEach((f, idx) => {
+        const text = generateReflection(f);
+        const lines = text.split('\n').length;
+        const wrap = document.createElement('section');
+        wrap.innerHTML = `<h3>Reflection ${idx+1} (${lines} lines)</h3><pre>${text}</pre>`;
+        root.appendChild(wrap);
+      });
+    </script>
+  </body>
+</html>
