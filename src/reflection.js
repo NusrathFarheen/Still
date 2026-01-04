@@ -31,6 +31,7 @@ export function generateReflection(features) {
   const isWeathered = grain > 0.25 && edges > 0.6 && !isDay;
   const isDawn = brightness > 0.35 && brightness < 0.6 && warmness > 0.6;
   const isDusk = brightness > 0.3 && brightness < 0.5 && warmness < 0.5;
+  const isLiving = warmness > 0.4 && edges < 0.6; // Soft and warm = likely living (pet/person)
 
   const timeLinePool = [
     "This has been here longer than today's worries.",
@@ -72,6 +73,14 @@ export function generateReflection(features) {
     "Textures gather stories without needing to be told.",
     "The air asks you to listen, not to name.",
   ];
+  const presenceLiving = [
+    "A quiet pulse moves beneath the surface.",
+    "Life rests here without worry.",
+    "Warmth gathers where the heart beats.",
+    "Soft breath rises and falls.",
+    "There is a gentle knowing in this silence.",
+  ];
+
   const presencePool = [
     ...presenceCore,
     ...(isNight ? presenceNight : []),
@@ -79,6 +88,7 @@ export function generateReflection(features) {
     ...(isDawn ? presenceDawn : []),
     ...(isDusk ? presenceDusk : []),
     ...(isWeathered ? presenceWeathered : []),
+    ...(isLiving ? presenceLiving : []),
   ];
   const groundingPool = [
     "You are here, not yesterday, not later.",
