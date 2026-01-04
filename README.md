@@ -24,10 +24,12 @@ node test_reflection.js
 ```
 
 ## Test the reflection generator
+3. Run tests:
 ```bash
 npm test
+# Or if you don't have Node.js locally, serve the directory and open tests/runner.html
 ```
-This prints sample reflections based on synthetic features.
+This prints sample reflections based on synthetic features and verifies constraints (4-6 lines, no banned words).
 
 ## Structure
 - [index.html](index.html)

@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Still Tests</title>
+</head>
+
+<body>
+    <h1>Still Tests</h1>
+    <pre id="output">Running...</pre>
+    <script type="module">
+        import { generateReflection } from '../src/reflection.js?v=2';
+
+        const bannedWords = [
+            'tree', 'car', 'phone', 'cup', 'book', 'street', 'building', 'chair', 'table', 'lamp', 'flower', 'computer', 'screen', 'keyboard', 'bottle', 'shoe', 'bag', 'window', 'door'
+        ];
+
+        function log(msg) {
+            document.getElementById('output').textContent += msg + '\n';
+            console.log(msg);
+        }
+
+        function assert(condition, message) {
+            if (!condition) {
+                throw new Error(message);
+            }
+        }
+
+        async function runTests() {
+            try {
+                // Test Line Count
+                log('Test: Line Count (4-6 lines)');
+                for (let i = 0; i < 20; i++) {
+                    const text = generateReflection({ seed: Math.random() });
+                    const lines = text.split('\n').filter(l => l.trim().length > 0);
+                    assert(lines.length >= 4 && lines.length <= 6, `Expected 4-6 lines, got ${lines.length}`);
+                }
+                log('PASS');
+
+                // Test Banned Words
+                log('Test: No Banned Words');
+                for (let i = 0; i < 50; i++) {
+                    const text = generateReflection({ seed: Math.random() });
+                    const lower = text.toLowerCase();
+                    for (const word of bannedWords) {
+                        assert(!lower.includes(word), `Found banned word "${word}" in: \n${text}`);
+                    }
+                }
+                log('PASS');
+
+                // Test Moods
+                log('Test: Moods');
+                const nightText = generateReflection({ brightness: 0.1, warmness: 0.1 });
+                assert(nightText.length > 0, "Night text generated");
+                log('PASS');
+
+                log('ALL TESTS PASSED');
+            } catch (e) {
+                log('TEST FAILED: ' + e.message);
+            }
+        }
+
+        runTests();
+    </script>
+</body>
+
+</html>

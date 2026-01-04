@@ -93,26 +93,33 @@ export function generateReflection(features) {
   const lines = [];
   lines.push(pick(timeLinePool, r(1)));
   lines.push(pick(presencePool, r(2)));
+  lines.push(pick(groundingPool, r(3)));
 
-  const extraLine = r(3) > 0.4 ? pick(presencePool, r(4)) : pick(groundingPool, r(5));
-  lines.push(extraLine);
+  // Fourth line is now guaranteed but variable source
+  lines.push(r(4) > 0.5 ? pick(presencePool, r(5)) : pick(timeLinePool, r(6)));
 
-  const addFourth = r(6) > 0.3;
   const addFifth = r(7) > lerp(0.2, 0.6, edges);
   const addSixth = r(8) > lerp(0.1, 0.5, 1 - brightness);
 
-  if (addFourth) lines.push(pick(groundingPool, r(9)));
-  if (addFifth) lines.push(pick(timeLinePool, r(10)));
+  if (addFifth) lines.push(pick(groundingPool, r(9)));
   if (addSixth) lines.push("Let the present be enough for now.");
 
-  const finalLines = lines.slice(0, clamp(lines.length, 4, 6));
+  // Deduplicate lines if possible (simple check)
+  const uniqueLines = [...new Set(lines)];
+
+  // Ensure we have at least 4
+  while (uniqueLines.length < 4) {
+    uniqueLines.push(pick(presencePool, Math.random()));
+  }
+
+  const finalLines = uniqueLines.slice(0, clamp(uniqueLines.length, 4, 6));
   const text = finalLines.join("\n");
   return sanitize(text);
 }
 
 function sanitize(text) {
   const banned = [
-    'tree','car','phone','cup','book','street','building','chair','table','lamp','flower','computer','screen','keyboard','bottle','shoe','bag','window','door'
+    'tree', 'car', 'phone', 'cup', 'book', 'street', 'building', 'chair', 'table', 'lamp', 'flower', 'computer', 'screen', 'keyboard', 'bottle', 'shoe', 'bag', 'window', 'door'
   ];
   const neutral = [
     "Quiet is not empty; it is patient.",
@@ -120,7 +127,15 @@ function sanitize(text) {
     "There is enough time to feel this.",
     "Let the present be enough for now.",
   ];
-  const hasBanned = (line) => banned.some(w => line.toLowerCase().includes(w));
+
+  const hasBanned = (line) => {
+    const lower = line.toLowerCase();
+    return banned.some(w => {
+      const regex = new RegExp(`\\b${w}\\b`, 'i');
+      return regex.test(lower);
+    });
+  };
+
   const replaceLine = (line, i) => hasBanned(line) ? neutral[i % neutral.length] : line;
   return text
     .split('\n')
