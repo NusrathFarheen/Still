@@ -1,0 +1,41 @@
+name: STILL-Agent
+workspaceRoot: /home/nusrathfarheen/Still
+
+entryPrompt: prompts/still_dev_agent.md
+
+goals:
+  - Improve the reflection generator while preserving Still’s voice.
+  - Keep reflections 4–6 lines, present-tense, sensory, no object names or facts.
+  - Add mood tuning (day/night/dawn/dusk/weathered) and a small word filter.
+  - Add unit tests that enforce style constraints.
+
+guardrails:
+  allowedPaths:
+    - index.html
+    - styles.css
+    - src/app.js
+    - src/reflection.js
+    - dev.html
+    - README.md
+    - tests/**
+  disallowedActions:
+    - sending data to remote services
+    - adding trackers/analytics
+    - removing camera permission hints
+
+tools:
+  - shell
+  - fs
+  - git
+
+commands:
+  devServer: "python3 -m http.server 5173"
+  test: "npm test || echo 'tests pending'"
+
+tasks:
+  - "Open src/reflection.js; analyze the generator."
+  - "Tune mood lines and add a small banned-word filter."
+  - "Create tests in tests/reflection.test.js (Vitest or Jest)."
+  - "Run devServer, verify capture/save/clear."
+  - "Update README.md with rules and usage."
+  - "Commit changes and propose a PR summary."
