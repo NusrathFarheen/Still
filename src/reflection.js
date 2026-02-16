@@ -5,7 +5,7 @@ function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
 function lerp(a, b, t) { return a + (b - a) * t; }
 
 // Gemini API configuration
-const GEMINI_API_KEY = 'AIzaSyBbsde-rJL1r3RxPMnRvRr9oqr71JhKfP4'; // Free tier API key
+const GEMINI_API_KEY = 'AIzaSyDVW9H8oGr0fliOH5qk-yi0AUAVhEFWClI'; // Free tier API key
 const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent';
 
 // Real AI vision using Google Gemini
