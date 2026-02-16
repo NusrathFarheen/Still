@@ -6,7 +6,7 @@ function lerp(a, b, t) { return a + (b - a) * t; }
 
 // Gemini API configuration
 const GEMINI_API_KEY = 'AIzaSyDVW9H8oGr0fliOH5qk-yi0AUAVhEFWClI'; // Free tier API key
-const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent';
+const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
 
 // Real AI vision using Google Gemini
 async function analyzeImageWithAI(imageDataUrl) {
