@@ -1,4 +1,5 @@
 import { generateReflection } from './reflection.js';
+import { createCompositeImage, downloadImage } from './imageOverlay.js';
 
 const video = document.getElementById('video');
 const canvas = document.getElementById('canvas');
@@ -39,14 +40,14 @@ function getFeaturesFromFrame() {
   const sobel = (x, y) => {
     const g = (ix, iy) => {
       const i = (iy * w + ix) * 4;
-      const r = data[i], g = data[i+1], b = data[i+2];
-      return 0.2126*r + 0.7152*g + 0.0722*b; // luma
+      const r = data[i], g = data[i + 1], b = data[i + 2];
+      return 0.2126 * r + 0.7152 * g + 0.0722 * b; // luma
     };
-    const xm1 = Math.max(0, x-1), xp1 = Math.min(w-1, x+1);
-    const ym1 = Math.max(0, y-1), yp1 = Math.min(h-1, y+1);
-    const gx = -g(xm1, ym1) - 2*g(xm1, y) - g(xm1, yp1) + g(xp1, ym1) + 2*g(xp1, y) + g(xp1, yp1);
-    const gy = -g(xm1, ym1) - 2*g(x, ym1) - g(xp1, ym1) + g(xm1, yp1) + 2*g(x, yp1) + g(xp1, yp1);
-    return Math.sqrt(gx*gx + gy*gy);
+    const xm1 = Math.max(0, x - 1), xp1 = Math.min(w - 1, x + 1);
+    const ym1 = Math.max(0, y - 1), yp1 = Math.min(h - 1, y + 1);
+    const gx = -g(xm1, ym1) - 2 * g(xm1, y) - g(xm1, yp1) + g(xp1, ym1) + 2 * g(xp1, y) + g(xp1, yp1);
+    const gy = -g(xm1, ym1) - 2 * g(x, ym1) - g(xp1, ym1) + g(xm1, yp1) + 2 * g(x, yp1) + g(xp1, yp1);
+    return Math.sqrt(gx * gx + gy * gy);
   };
 
   // Sample grid for performance
@@ -56,9 +57,9 @@ function getFeaturesFromFrame() {
     for (let x = 0; x < w; x += step) {
       const i = (y * w + x) * 4;
       const r = data[i];
-      const g = data[i+1];
-      const b = data[i+2];
-      const luma = 0.2126*r + 0.7152*g + 0.0722*b;
+      const g = data[i + 1];
+      const b = data[i + 2];
+      const luma = 0.2126 * r + 0.7152 * g + 0.0722 * b;
       sumLuma += luma;
       // Warm/cool heuristic: red vs blue bias
       sumWarm += Math.max(0, r - b);
@@ -73,16 +74,16 @@ function getFeaturesFromFrame() {
 
   // Grain: variance of luma on coarse grid
   let sum2 = 0; let sumSq = 0; let n = 0;
-  for (let y = 0; y < h; y += step*4) {
-    for (let x = 0; x < w; x += step*4) {
+  for (let y = 0; y < h; y += step * 4) {
+    for (let x = 0; x < w; x += step * 4) {
       const i = (y * w + x) * 4;
-      const r = data[i], g = data[i+1], b = data[i+2];
-      const l = (0.2126*r + 0.7152*g + 0.0722*b)/255;
-      sum2 += l; sumSq += l*l; n++;
+      const r = data[i], g = data[i + 1], b = data[i + 2];
+      const l = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+      sum2 += l; sumSq += l * l; n++;
     }
   }
-  const mean = sum2 / Math.max(1,n);
-  const variance = sumSq / Math.max(1,n) - mean*mean;
+  const mean = sum2 / Math.max(1, n);
+  const variance = sumSq / Math.max(1, n) - mean * mean;
   grain = Math.max(0, Math.min(1, variance * 4));
 
   return {
@@ -100,10 +101,25 @@ function showReflection(text) {
   saveBtn.classList.remove('hidden');
 }
 
-captureBtn.addEventListener('click', () => {
+captureBtn.addEventListener('click', async () => {
   captureBtn.disabled = true;
+  output.textContent = 'Finding beauty in this moment...';
+
   const features = getFeaturesFromFrame();
-  const text = generateReflection(features);
+
+  // Get image data URL for AI analysis
+  const w = Math.min(640, video.videoWidth || 640);
+  const h = Math.round((video.videoHeight || 480) * (w / (video.videoWidth || 640)));
+  canvas.width = w;
+  canvas.height = h;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(video, 0, 0, w, h);
+  const imageDataUrl = canvas.toDataURL('image/jpeg', 0.85);
+
+  // Generate reflection with AI
+  const result = await generateReflection(features, imageDataUrl);
+  const text = typeof result === 'string' ? result : result.text;
+
   showReflection(text);
   captureBtn.disabled = false;
 });
@@ -151,18 +167,49 @@ function renderGallery() {
   });
 }
 
-saveBtn?.addEventListener('click', () => {
-  const w = Math.min(640, video.videoWidth || 640);
-  const h = Math.round((video.videoHeight || 480) * (w / (video.videoWidth || 640)));
-  canvas.width = w; canvas.height = h;
-  const ctx = canvas.getContext('2d');
-  ctx.drawImage(video, 0, 0, w, h);
-  const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
-  const moments = readMoments();
-  moments.push({ text: output.textContent || '', image: dataUrl, ts: Date.now() });
-  writeMoments(moments);
-  renderGallery();
-  saveBtn.classList.add('hidden');
+saveBtn?.addEventListener('click', async () => {
+  try {
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'Creating beautiful memory...';
+
+    // Get current frame
+    const w = Math.min(640, video.videoWidth || 640);
+    const h = Math.round((video.videoHeight || 480) * (w / (video.videoWidth || 640)));
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(video, 0, 0, w, h);
+    const baseImageUrl = canvas.toDataURL('image/jpeg', 0.85);
+
+    // Create composite image with text overlay
+    const compositeImageUrl = await createCompositeImage(
+      baseImageUrl,
+      output.textContent || ''
+    );
+
+    // Save to localStorage gallery
+    const moments = readMoments();
+    moments.push({
+      text: output.textContent || '',
+      image: compositeImageUrl,
+      ts: Date.now()
+    });
+    writeMoments(moments);
+    renderGallery();
+
+    // Also trigger download for mobile users
+    const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
+    downloadImage(compositeImageUrl, `still-moment-${timestamp}.jpg`);
+
+    saveBtn.textContent = 'Save this moment';
+    saveBtn.disabled = false;
+    againBtn.click(); // Reset for next capture
+  } catch (error) {
+    console.error('Error saving moment:', error);
+    saveBtn.textContent = 'Save this moment';
+    saveBtn.disabled = false;
+    alert('Could not save moment. Please try again.');
+  }
 });
 
 renderGallery();
